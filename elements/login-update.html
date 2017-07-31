@@ -1,0 +1,240 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<!--
+`login-registro`
+elemento para hacer el registro en firebase a travès de email y password
+
+@demo demo/index.html 
+-->
+
+<dom-module id="login-update">
+  <template>
+    <style>
+      :host {
+       
+      }
+
+       paper-button{
+        background: var(--accent-color);
+        color:white;
+        text-transform: capitalize;
+        border-radius: 25px;
+        padding: 7px
+      }
+
+      .inputs{
+        max-width: 400px;      
+        margin: auto
+      }
+
+       paper-input{
+        --paper-input-container-focus-color:var(--accent-color);
+        --paper-input-container-label:{
+              font-size: 0.85em;};
+      }
+
+      .sendPass{
+       
+        margin-top: 20px;
+        text-align: center
+      }
+      
+      .sendPass a{
+        color:var(--accent-color);
+        text-decoration: none;
+       
+      }
+
+      iron-icon{
+        --iron-icon-fill-color:#e53935;
+      }
+
+      .title{
+        margin-top: 20px
+      }
+
+       @media (max-width: 400px) {
+        .sendPass{
+        
+         
+           max-width: 230px;
+        }
+
+        @media (max-width: 400px) {
+          .inputs{
+              max-width: 230px;  
+              margin-left: 1px
+          }
+
+          #updatePass{
+            margin-top: 8px
+          }
+        }
+      
+    </style>
+
+    <!-- signal lanzado por el método 'dialogAccept' de <my-app> -->
+    <iron-signals on-iron-signal-sinal="removeItem"></iron-signals>
+
+    
+      <iron-icon icon="account-circle"></iron-icon>
+     <iron-icon icon="expand-more" on-tap="toggle"></iron-icon> 
+      <div class="inputs">
+      
+          <div class="title">Deseja deletar sua conta?</div>
+          <paper-input label="Senha" type="password" value="{{data.password}}"></paper-input>
+          <paper-button raised on-tap="deleteUser">Deletar usuario</paper-button>
+
+          <div class="title">Deseja atualizar seu e-mail ou sua senha?</div>
+          <paper-input label="E-mail" value="{{data.email}}"></paper-input>
+          <paper-input label="Nova senha" type="password" value="{{newPass}}"></paper-input>
+          <paper-button raised on-tap="sendEmailPass">Esqueci minha senha</paper-button>
+          <paper-button raised on-tap="updateEmail">Atualizar E-mail</paper-button>
+          <paper-button id="updatePass" raised on-tap="updatePass">Atualizar Senha</paper-button>
+   
+      </div>
+    
+  </template>
+
+  <script>
+
+    class LoginUpdate extends Polymer.Element{
+      static get is() { return 'login-update' } 
+      static get properties() {
+        return {
+          fbapp:Object,
+          credential:String,
+          user:Object,
+          newPass:String,
+          data: {
+            type:Object,
+            value(){
+              return{
+                password:'',
+                name:'',
+                email:''
+              }
+            }
+          }
+
+        }
+      }
+
+        // envio de email para restablecimiento de contraseña
+      sendEmailPass(){
+          if(!this.data.email){
+            this.dispatchNegative('Favor introducir seu e-mail');
+            return false
+          }
+          this.fbapp.auth().sendPasswordResetEmail(this.data.email).then(function() {
+              this.dispatchPositive('E-mail para restabelecer senha enviado');
+              this.data = { email: ''}
+          }.bind(this), function(error) {
+                this.dispatchNegative('E-mail incorrecto');                
+              }.bind(this));
+      }
+
+       // borrado de la cuenta del usuario. La cuenta se borrará del path 'usuarios' y se pasarà al path 'users_deleted'
+      deleteUser(data){   
+        if(!this.user){
+          this.dispatchNegative('Você nao esta logado');
+          return false
+        }
+
+        switch(this.user.providerData[0].providerId){
+          case 'password':
+          var credential = firebase.auth.EmailAuthProvider.credential(this.user.email,this.data.password)
+          break
+          case 'google.com':
+          var credential = firebase.auth.GoogleAuthProvider.credential(this.credential);
+          break
+          case 'facebook.com':
+          var credential = firebase.auth.FacebookAuthProvider.credential(this.credential);
+          break
+        }
+       
+        this.user.reauthenticateWithCredential(credential).then(function(){ 
+            this.fbapp.database().ref('/users/' + this.user.uid).remove();  
+              this.user.delete().then(function(){
+                this.data = { password: ''};
+                this.dispatchPositive('Conta Encerrada');
+              }.bind(this),function(error){
+                this.dispatchNegative('Senha Inválida');
+            }.bind(this))
+              }.bind(this),function(error){
+                this.data = { password: ''};
+                this.dispatchNegative('Senha Inválida');
+            }.bind(this))
+        }
+
+      // actualización del e-mail del usuario
+      updateEmail(){
+          if(!this.user){
+              this.dispatchNegative('Você nao esta logado');
+              return false
+          }
+          if (this.user.providerData[0].providerId == 'password'){
+          var credential = firebase.auth.EmailAuthProvider.credential(this.user.email,this.data.password);
+          this.user.reauthenticateWithCredential(credential).then(function(){
+               this.user.updateEmail(this.data.email).then(function(){
+                  this.fbapp.database().ref('/users/' + this.user.uid).update({email: this.data.email}).then(function(){
+                    this.dispatchPositive('E-mail atualizado');
+                    this.data = { email: '',password:''}
+                  }.bind(this),function(error){
+                    console.log(error) // error del método 'update()'
+                  })
+               }.bind(this), function (error) { // error del método 'updateEmail'
+                 this.dispatchNegative('E-mail ou senha inválidos');
+               });
+          }.bind(this), function (error) { // error del método 'reauthenticateWithCredential()'
+            this.dispatchNegative('E-mail ou senha inválidos');
+          }.bind(this))
+          return false;
+        }
+
+        this.dispatchNegative('Você está logado com uma Rede Social');
+
+      }
+
+      // actualización del password del usuario
+      updatePass(){
+          if(!this.user){
+              this.dispatchNegative('Você nao esta logado');
+              return false
+              }
+          if (this.user.providerData[0].providerId == 'password'){
+            var credential = firebase.auth.EmailAuthProvider.credential(this.user.email,this.data.password);
+          this.user.reauthenticateWithCredential(credential).then(function(){
+               this.user.updatePassword(this.newPass).then(function(){               
+                    this.dispatchPositive('Senha atualizada');
+                    this.data = { password: ''};
+                    this.newPass = ''              
+               }.bind(this), function (error) { // error del método 'Password'
+                 this.dispatchNegative('E-mail ou senha inválidos');
+               });
+          }.bind(this), function (error) { // error del método 'reauthenticateWithCredential()'
+            this.dispatchNegative('E-mail ou senha inválidos');
+          }.bind(this))
+          return false;
+        }
+
+        this.dispatchNegative('Você está logado com uma Rede Social');
+
+      } 
+
+      dispatchPositive(message){
+           this.dispatchEvent(new CustomEvent('positiveToast', {bubbles:true, composed:true, detail:message}));
+      }
+
+      dispatchNegative(message){
+           this.dispatchEvent(new CustomEvent('negativeToast', {bubbles:true, composed:true, detail:message}));
+      }
+
+    }
+
+    window.customElements.define(LoginUpdate.is,LoginUpdate)
+
+
+  </script>
+</dom-module>

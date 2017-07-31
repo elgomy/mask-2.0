@@ -1,0 +1,150 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+
+<dom-module id="login-signin">
+  <template>
+    <style>
+      :host {
+        
+        top: 46px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+       
+       /* background-color: var(--paper-indigo-a200); */
+       
+       @apply(--layout-flex);
+
+    
+      }
+
+    /*  :host([signed-in]) { /*condicional de estilo que nos permite que cuando el usuario se loguee el componente se haga invisible
+        opacity: 0;
+        pointer-events: none; 
+      } */
+
+       paper-button#signButton{
+        background: var(--accent-color);
+        color:white;
+        text-transform: capitalize;
+        border-radius: 25px;
+        padding: 7px
+        
+      }
+
+      paper-button{
+         height: 40px;
+         width: 40px;
+      }
+
+      img{
+      height: 40px;
+      width: 40px;
+      } 
+
+    .inputs{
+        max-width: 400px;      
+        margin: auto
+      }
+
+      paper-input{
+        --paper-input-container-focus-color:var(--accent-color);
+        --paper-input-container-label:{
+              font-size: 0.85em;};     
+      }
+
+      gold-email-input{
+        --paper-input-container-focus-color:var(--accent-color)
+      }
+
+    @media (max-width: 600px) {
+        .inputs{
+          max-width: 325px;  
+          margin-left: 1px
+        }
+    </style>
+          
+  
+  <!--sign in con email y password -->
+  <div class="inputs">
+    <paper-input 
+        id="emailInput"   
+        label="E-mail" 
+        value="{{dato.email}}">
+    </paper-input>
+
+  <div id="button">
+    <paper-input 
+        required 
+        label="Senha" 
+        type="password" 
+        value="{{dato.password}}">
+    </paper-input>
+  </div>
+    
+    <paper-button id="signButton" raised on-tap="signEmail">Entrar</paper-button>
+    </div>
+
+     <!--sign in con Google -->
+     <paper-button on-tap="signGoogle" disabled="[[disabled]]"> 
+        <img src="../images/google-plus-logo-button1.svg"></img>
+    </paper-button>
+
+  <!--sign in con Facebook -->
+    <paper-button on-tap="signFacebook" disabled="[[disabled]]"> 
+        <img src="../images/facebook-logo-button1.svg"></img>
+    </paper-button>
+   
+  </template>
+
+  <script>
+
+    class LoginSignin extends Polymer.Element{
+      static get is() { return 'login-signin' } 
+      static get properties() {
+        return {
+           //propiedad que se activa cuando el usuario está logueado
+            signedIn: {
+              type: Boolean,
+              reflectToAttribute: true,
+              value: false
+            },     
+          //objeto con los datos del usuario (propiedades 'email' y 'password')
+            dato:{
+              type: Object,
+              notify: true,
+              value(){
+                return{
+                  email:'',
+                  password:''
+                }
+              }
+            } 
+        }
+      }
+
+
+      signEmail(){
+
+        this.dispatchEvent(new CustomEvent('email',{bubbles:true, composed:true, detail: this.dato}))
+      }
+
+        // método para loguear con 'Google' que lanzará el evento personalizado 'sign-google' para hacer el enlace con el componente <login-gestion> al que se le pasará la variable 'google' que contiene el método 'firebase.auth.GoogleAuthProvider()'. Se le pasará esta variable al método 'link' a través del parámetro 'social'
+        // IMPORTANTE: DEBEMOS HABILITAR ESTOS MÈTODOS DE INICIO DE SESIÓN EN FIREBASE
+      signGoogle() {
+        let google = new firebase.auth.GoogleAuthProvider(); // credential
+        this.dispatchEvent(new CustomEvent('sign-google',{bubbles:false, composed:true, detail: google}))
+      }
+
+      signFacebook() {
+        let facebook = new firebase.auth.FacebookAuthProvider(); // credential
+        this.dispatchEvent(new CustomEvent('sign-facebook',{bubbles:false, composed:true, detail: facebook}))
+      }
+
+    }
+
+    window.customElements.define(LoginSignin.is,LoginSignin)
+
+  </script>
+</dom-module>

@@ -27,6 +27,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="lazy-import" href="my-view3.html">
 <link rel="lazy-import" href="my-view404.html">
 
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
+<link rel="import" href="../elements/elements-import.html">
+
 <dom-module id="my-app">
   <template>
     <style>
@@ -68,6 +74,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
+    
+
     <app-location route="{{route}}"></app-location>
     <app-route
         route="{{route}}"
@@ -80,7 +88,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <app-drawer id="drawer" slot="drawer">
         <app-toolbar>Menu</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="view1">View One</a>
+          <a name="view1" href="view1">Minha Conta</a>
           <a name="view2" href="view2">View Two</a>
           <a name="view3" href="view3">View Three</a>
         </iron-selector>
@@ -93,7 +101,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <app-toolbar>
             <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
             <div main-title>My App</div>
-          </app-toolbar>
+
+
+             <div id="user" hidden$="{{!signed}}">[[userProfile.nombre]]</div>
+               <iron-icon icon="perm-identity" id="signIcon" hidden$="{{signed}}" on-tap="pageSign"></iron-icon> 
+              <iron-icon icon="expand-more" id="expandIcon" hidden$="{{!signed}}" on-tap="openDrop"></iron-icon>  
+
+               <div class="dropIcon">
+                        <iron-icon on-tap="logout" icon="my-icons:exit-to-app" id="exitIcon" hidden$="{{!signed}}"></iron-icon>
+                        
+                    </div>
+
+          </app-toolbar>  
         </app-header>
 
         <iron-pages
@@ -108,6 +127,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
+
+
+<!-- /////////////////////////////////////////////////////////////////////////////////////-->
+
+ <!--inicializamos Firebase -->
+         <firebase-app 
+            auth-domain="mask-f94d9.firebaseapp.com"
+            database-url="https://mask-f94d9.firebaseio.com"
+            api-key="AIzaSyDmqqvnNoBvR_z8ZpTaA82vlomGAsBXDuU"
+            name="mask-polymerfire"
+            app="{{fbapp}}">
+        </firebase-app>
+
+         <firebase-auth 
+            app-name="mask-polymerfire"
+            id="auth" 
+            user="{{user}}" 
+            signed-in="{{signed}}"
+            status-known="{{statusKnown}}"
+            app="{{fbapp}}">
+        </firebase-auth>
+
+        <firebase-document               
+            app-name="mask-polymerfire"
+            path="/users/{{user.uid}}" 
+            data="{{userProfile}}">
+       </firebase-document>
+
+      <!-- dialog de confirmación de borrado de usuario 
+      <paper-dialog modal id="removeDialog" on-iron-overlay-closed="dialogAccept">
+            <h2><iron-icon icon="warning" id="warningIcon"></iron-icon> Tem certeza?</h2>
+            <p>encerrar a conta</p>
+              <div class="buttons">
+                <paper-button dialog-dismiss autofocus>Cancelar</paper-button>
+                <paper-button dialog-confirm >Deletar</paper-button>
+              </div>
+      </paper-dialog> -->
+
+    <!--toast -->
+    <paper-toast id="positiveToast"></paper-toast>
+    <paper-toast id="negativeToast"></paper-toast>
+
   </template>
 
   <script>
@@ -125,6 +186,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           rootPattern: String,
           routeData: Object,
           subroute: String,
+          userProfile:Object,
+          fbapp:Object,
+          signed:Boolean
         };
       }
 
@@ -172,6 +236,57 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _showPage404() {
         this.page = 'view404';
       }
+
+       ready(){
+        super.ready();
+       // console.log('ready');
+
+      // ENLACE con <login-gestion>
+        this.addEventListener('positiveToast', e => this._openPositiveToast(e));
+        this.addEventListener('negativeToast', e => this._openNegativeToast(e));
+      //  this.addEventListener('dialogUser', e => this._openDialogDelete(e));
+        }
+
+        _openPositiveToast(e){
+            this.$.positiveToast.open();
+            this.$.positiveToast.text = e.detail
+        }
+
+        _openNegativeToast(e){
+            this.$.negativeToast.open();
+            this.$.negativeToast.text = e.detail
+        }
+
+    //    _openDialogDelete(e){
+    //      this.$.removeDialog.open()
+    //    }
+
+          // enlace con el componente <bi-editor>
+     //   dialogAccept(e){
+     //     if (e.detail.confirmed){
+    //        console.log('acept')
+    //        let companyItem = e.currentTarget.company;
+     //      this.dispatchEvent('iron-signal', {name: 'sinal'});
+     //   }       
+     // }
+
+        
+        // cerrar sesión de usuario
+    
+      logout(){
+        if (!this.user){
+                alert('no estas logueado')
+                    return false;
+                  }
+
+        this.$.auth.signOut().catch(function(error){
+          console.log(error.code, error.message)
+        }).then(function(){
+            this.dispatchEvent(new CustomEvent('positiveToast',{bubbles:true, composed:true, detail:'Tchau!'}))
+         // this.fire('positive-toast','Sessão encerrada')
+        }.bind(this))
+      }
+      
     }
 
     window.customElements.define(MyApp.is, MyApp);
