@@ -28,14 +28,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="lazy-import" href="my-view404.html">
 
 <link rel="import" href="../bower_components/polymerfire/polymerfire.html">
-
+<link rel="import" href="../bower_components/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shared-styles.html">
 <link rel="import" href="../elements/elements-import.html">
 
 <dom-module id="my-app">
   <template>
-    <style>
+    <style include="shared-styles">
       :host {
         --app-primary-color: #4285f4;
         --app-secondary-color: black;
@@ -72,6 +76,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: black;
         font-weight: bold;
       }
+
+      .card{
+        width: 280px;
+        height:150px;
+        padding: 1px
+      }
+
+      .actions{
+         @apply(--layout-horizontal);
+          
+         @apply(--layout-around-justified);
+         background: #eceff1;
+         border-top: 1px solid #b0bec5;
+         font-size: 13px;
+
+      }
+
+      .actions paper-button{
+        text-transform: none;
+        border:1px solid #b0bec5;
+        margin:5px;
+        padding: 5px;
+      }
+
+      .cardContent{
+        font-size: 16px;
+       
+      }
+
+      #profilePhoto{
+         border-radius: 50px;
+         width: 50px;
+         height: 50px;
+      }
+
+   
     </style>
 
     
@@ -100,17 +140,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <app-header slot="header" condenses reveals effects="waterfall">
           <app-toolbar>
             <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
-            <div main-title>My App</div>
+            <div main-title>Mask 2.0</div>
 
 
-             <div id="user" hidden$="{{!signed}}">[[userProfile.nombre]]</div>
+            
                <iron-icon icon="perm-identity" id="signIcon" hidden$="{{signed}}" on-tap="pageSign"></iron-icon> 
-              <iron-icon icon="expand-more" id="expandIcon" hidden$="{{!signed}}" on-tap="openDrop"></iron-icon>  
+              <iron-icon icon="expand-more" id="expandIcon" hidden$="{{!signed}}" on-tap="openDrop"></iron-icon> 
 
-               <div class="dropIcon">
-                        <iron-icon on-tap="logout" icon="my-icons:exit-to-app" id="exitIcon" hidden$="{{!signed}}"></iron-icon>
-                        
-                    </div>
+              <iron-icon on-tap="dropAccount" icon="my-icons:account-circle" id="acount"></iron-icon> 
+
+             
+
+               <iron-dropdown id="profileDrop" horizontal-align="right" vertical-align="top" vertical-offset="45" horizontal-offset="2">
+          <div slot="dropdown-content">
+
+    
+        
+        <div class="card" id="accountCard">
+          <div class="cardContent">
+              <img id="profilePhoto" src$="[[userProfile.photoURL]]" alt="my-icons:account-circle">
+                <div>[[userProfile.nombre]]</div>
+              
+          </div>
+          <login-social fbapp="{{fbapp}}" hidden$="{{signed}}"></login-social>
+          <div class="actions">
+            <paper-button>Conta</paper-button>
+            <paper-button on-tap="logout">Sair</paper-button>
+          </div>
+        </div>
+        
+          
+      
+  </div>
+</iron-dropdown>
 
           </app-toolbar>  
         </app-header>
@@ -188,7 +250,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           subroute: String,
           userProfile:Object,
           fbapp:Object,
-          signed:Boolean
+          signed:Boolean,
+          provider:String
         };
       }
 
@@ -282,9 +345,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.auth.signOut().catch(function(error){
           console.log(error.code, error.message)
         }).then(function(){
+            
             this.dispatchEvent(new CustomEvent('positiveToast',{bubbles:true, composed:true, detail:'Tchau!'}))
          // this.fire('positive-toast','Sessão encerrada')
         }.bind(this))
+      }
+
+      dropAccount(){
+        
+        this.$.profileDrop.open()
       }
       
     }

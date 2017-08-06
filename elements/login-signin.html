@@ -86,15 +86,6 @@
     <paper-button id="signButton" raised on-tap="signEmail">Entrar</paper-button>
     </div>
 
-     <!--sign in con Google -->
-     <paper-button on-tap="signGoogle" disabled="[[disabled]]"> 
-        <img src="../images/google-plus-logo-button1.svg"></img>
-    </paper-button>
-
-  <!--sign in con Facebook -->
-    <paper-button on-tap="signFacebook" disabled="[[disabled]]"> 
-        <img src="../images/facebook-logo-button1.svg"></img>
-    </paper-button>
    
   </template>
 
@@ -104,12 +95,7 @@
       static get is() { return 'login-signin' } 
       static get properties() {
         return {
-           //propiedad que se activa cuando el usuario está logueado
-            signedIn: {
-              type: Boolean,
-              reflectToAttribute: true,
-              value: false
-            },     
+            
           //objeto con los datos del usuario (propiedades 'email' y 'password')
             dato:{
               type: Object,
@@ -130,17 +116,6 @@
         this.dispatchEvent(new CustomEvent('email',{bubbles:true, composed:true, detail: this.dato}))
       }
 
-        // método para loguear con 'Google' que lanzará el evento personalizado 'sign-google' para hacer el enlace con el componente <login-gestion> al que se le pasará la variable 'google' que contiene el método 'firebase.auth.GoogleAuthProvider()'. Se le pasará esta variable al método 'link' a través del parámetro 'social'
-        // IMPORTANTE: DEBEMOS HABILITAR ESTOS MÈTODOS DE INICIO DE SESIÓN EN FIREBASE
-      signGoogle() {
-        let google = new firebase.auth.GoogleAuthProvider(); // credential
-        this.dispatchEvent(new CustomEvent('sign-google',{bubbles:false, composed:true, detail: google}))
-      }
-
-      signFacebook() {
-        let facebook = new firebase.auth.FacebookAuthProvider(); // credential
-        this.dispatchEvent(new CustomEvent('sign-facebook',{bubbles:false, composed:true, detail: facebook}))
-      }
 
     }
 

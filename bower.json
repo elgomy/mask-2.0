@@ -21,7 +21,10 @@
     "paper-input": "PolymerElements/paper-input#^2.0.1",
     "paper-toast": "PolymerElements/paper-toast#^2.0.0",
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
-    "iron-signals": "PolymerElements/iron-signals#^1.0.3"
+    "iron-signals": "PolymerElements/iron-signals#^1.0.3",
+    "simple-dropdown": "SimpleElements/simple-dropdown#^0.4.0",
+    "iron-dropdown": "PolymerElements/iron-dropdown#^2.0.0",
+    "paper-card": "PolymerElements/paper-card#^2.0.0"
   },
   "resolutions": {
     "polymer": "^2.0.0-rc.3"

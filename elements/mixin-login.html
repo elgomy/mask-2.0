@@ -1,0 +1,92 @@
+  <script>
+
+     MixinLogin = function(superClass){
+        return class extends superClass{
+
+      		     // método para loguear con 'Google' que lanzará el evento personalizado 'sign-google' para hacer el enlace con el componente <login-gestion> al que se le pasará la variable 'google' que contiene el método 'firebase.auth.GoogleAuthProvider()'. Se le pasará esta variable al método 'link' a través del parámetro 'social'
+        // IMPORTANTE: DEBEMOS HABILITAR ESTOS MÈTODOS DE INICIO DE SESIÓN EN FIREBASE
+            signGoogle() {
+              let google = new firebase.auth.GoogleAuthProvider(); // credential
+              this.signIn(google)
+            }
+
+            signFacebook() {
+              let facebook = new firebase.auth.FacebookAuthProvider(); // credential
+              this.signIn(facebook)
+            }
+
+            signIn(provider){
+              if (this.user){
+                this.dispatchEvent(new CustomEvent('negativeToast',{bubbles:true, composed:true, detail: 'Você já está logueado!'}))
+                return false;
+              }
+            
+                this.fbapp.auth().signInWithPopup(provider).then(function(result){
+                  this.credential = result.credential;
+                  this.saveProfile(result.user);
+                  this.dispatchEvent(new CustomEvent('positiveToast',{bubbles:true, composed:true, detail:'Oi!'}));                     
+                }.bind(this),
+                    function(error){
+                      this.errorCode(error);                          
+                    }.bind(this));  
+            }
+
+          // método para guardar los datos del usuario en Firebase. Le pasamos como parámetro a través de 'user'. Se el usuario se registra a través de e-mail / password, cadastramos su nombre en la base de datos a través del parámetro 'data' (data.name)
+
+          saveProfile(user,data){  
+              this.fbapp.database().ref('/users/' + user.uid).set({
+                nombre: user.providerData[0].displayName || data.name || 'nome desconhecido', 
+                email: user.email || 'no-email@example.com',
+                photoURL: user.providerData[0].photoURL || 'http://lucialiu.me/images/portfolio/tastemap/profile-icon.png'
+              });      
+            }
+
+          errorCode(error){
+              switch (error.code){
+                case 'auth/provider-already-linked' || 'auth/credential-already-in-use':
+                var message = 'Red Social ya asociada a un usuario';
+                this.fireEvent(message)
+                break
+                case 'auth/invalid-credential':
+                var message = 'Credencial de autenticación expirada';
+                this.fireEvent(message)
+                break
+                case 'auth/email-already-in-use':
+                var message = 'Email ya asociado a un usuario';
+                this.fireEvent(message)
+                break
+                case 'auth/invalid-email' || 'auth/wrong-password':
+                var message = 'Email o Password inválidos';
+                this.fireEvent(message)
+                break
+                case 'auth/weak-password':
+                var message = 'El password debe tener mínimo 6 caracteres';
+                this.fireEvent(message)
+                break        
+                case 'auth/user-disabled':
+                var message = 'Usuario no autorizado';
+                this.fireEvent(message)
+                break
+                case 'auth/user-not-found':
+                var message = 'No existe un usuario asociado a ese email';
+                this.fireEvent(message)
+                break
+                case 'auth/argument-error':
+                var message = 'Email inválidol';
+                this.fireEvent(message)
+                break                     
+              }
+          } 
+
+        fireEvent(message){
+          this.dispatchEvent(new CustomEvent('negativeToast',{bubbles:true, composed:true, detail:message}))
+        }
+
+      }
+     
+    }
+
+ 
+
+  </script>
+

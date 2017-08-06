@@ -1,0 +1,59 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="mixin-login.html">
+
+<dom-module id="login-social">
+  <template>
+    <style>
+       :host {
+        
+        top: 46px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+       
+       /* background-color: var(--paper-indigo-a200); */
+       
+       @apply(--layout-flex);
+    
+      }
+
+    /*  :host([signed-in]) { /*condicional de estilo que nos permite que cuando el usuario se loguee el componente se haga invisible
+        opacity: 0;
+        pointer-events: none; 
+      } */ 
+      paper-button{
+        height: 40px;
+        width: 40px;
+      }
+
+      img{
+        height: 40px;
+        width: 40px;
+      } 
+
+    </style>
+
+        <!--sign in con Google -->
+    <paper-button on-tap="signGoogle" disabled="[[disabled]]"> 
+        <img src="../images/google-plus-logo-button1.svg"></img>
+    </paper-button>
+
+  <!--sign in con Facebook -->
+    <paper-button on-tap="signFacebook" disabled="[[disabled]]"> 
+        <img src="../images/facebook-logo-button1.svg"></img>
+    </paper-button>
+  
+   
+  </template>
+
+  <script>
+
+    class LoginSocial extends MixinLogin(Polymer.Element){
+      static get is() { return 'login-social' } 
+
+    }
+
+    window.customElements.define(LoginSocial.is,LoginSocial)
+
+  </script>
+</dom-module>
