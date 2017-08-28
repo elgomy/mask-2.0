@@ -1,6 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="mixin-login.html">
 <!--
 `login-registro`
 elemento para hacer el registro en firebase a travès de email y password
@@ -74,24 +75,50 @@ elemento para hacer el registro en firebase a travès de email y password
       
     </style>
 
-    <!-- signal lanzado por el método 'dialogAccept' de <my-app> -->
-    <iron-signals on-iron-signal-sinal="removeItem"></iron-signals>
+       <firebase-auth 
+            app-name="mask-polymerfire"
+            id="auth" 
+            user="{{user}}" 
+            signed-in="{{signed}}"
+            status-known="{{statusKnown}}"
+            app="{{fbapp}}">
+    </firebase-auth> 
 
+         <firebase-document               
+            app-name="mask-polymerfire"
+            path="/users/{{user.uid}}" 
+            data="{{userProfile}}">
+       </firebase-document>
+
+    <h3>Perfil</h3>
+
+      <div>Nome do usuário</div>
     
-      <iron-icon icon="account-circle"></iron-icon>
-     <iron-icon icon="expand-more" on-tap="toggle"></iron-icon> 
+      <div>[[userProfile.nombre]]</div>
+      <div>E-mail</div>
+      
+      <div>[[userProfile.email]]</div>
+      
+       <paper-button raised on-tap="editProfile">Editar Perfil</paper-button>
+   
       <div class="inputs">
       
           <div class="title">Deseja deletar sua conta?</div>
           <paper-input label="Senha" type="password" value="{{data.password}}"></paper-input>
           <paper-button raised on-tap="deleteUser">Deletar usuario</paper-button>
 
-          <div class="title">Deseja atualizar seu e-mail ou sua senha?</div>
+          <div class="title">Deseja atualizar seu e-mail?</div>
           <paper-input label="E-mail" value="{{data.email}}"></paper-input>
-          <paper-input label="Nova senha" type="password" value="{{newPass}}"></paper-input>
-          <paper-button raised on-tap="sendEmailPass">Esqueci minha senha</paper-button>
           <paper-button raised on-tap="updateEmail">Atualizar E-mail</paper-button>
+
+           <div class="title">Deseja atualizar sua senha?</div>
+          <paper-input label="Senha" type="password" value="{{data.oldpass}}"></paper-input>
+          <paper-input label="Nova senha" type="password" value="{{newPass}}"></paper-input>     
           <paper-button id="updatePass" raised on-tap="updatePass">Atualizar Senha</paper-button>
+          
+          <div class="title">Esqueceu sua senha?</div>
+           <paper-input label="E-mail" value="{{data.emailpass}}"></paper-input>
+          <paper-button raised on-tap="sendEmailPass">Resetar senha</paper-button>
    
       </div>
     
@@ -99,12 +126,12 @@ elemento para hacer el registro en firebase a travès de email y password
 
   <script>
 
-    class LoginUpdate extends Polymer.Element{
+    class LoginUpdate extends MixinLogin(Polymer.Element){
       static get is() { return 'login-update' } 
       static get properties() {
         return {
           fbapp:Object,
-          credential:String,
+          
           user:Object,
           newPass:String,
           data: {
@@ -121,15 +148,18 @@ elemento para hacer el registro en firebase a travès de email y password
         }
       }
 
+   
+
+
         // envio de email para restablecimiento de contraseña
       sendEmailPass(){
-          if(!this.data.email){
+          if(!this.data.emailpass){
             this.dispatchNegative('Favor introducir seu e-mail');
             return false
           }
-          this.fbapp.auth().sendPasswordResetEmail(this.data.email).then(function() {
+          this.fbapp.auth().sendPasswordResetEmail(this.data.emailpass).then(function() {
               this.dispatchPositive('E-mail para restabelecer senha enviado');
-              this.data = { email: ''}
+              this.data = { emailpass: ''}
           }.bind(this), function(error) {
                 this.dispatchNegative('E-mail incorrecto');                
               }.bind(this));
@@ -141,21 +171,36 @@ elemento para hacer el registro en firebase a travès de email y password
           this.dispatchNegative('Você nao esta logado');
           return false
         }
-
+        
         switch(this.user.providerData[0].providerId){
           case 'password':
-          var credential = firebase.auth.EmailAuthProvider.credential(this.user.email,this.data.password)
+              if(!this.data.password){
+                  this.dispatchNegative('Favor introducir sua senha');
+                  return false
+              }
+              var credential = firebase.auth.EmailAuthProvider.credential(this.user.email,this.data.password);
+                this.autDelete(credential);      
           break
           case 'google.com':
-          var credential = firebase.auth.GoogleAuthProvider.credential(this.credential);
+              let google = new firebase.auth.GoogleAuthProvider();
+              // IMP: para conseguir la credencial del login social necesitamos logar nuevamente
+              this.fbapp.auth().signInWithPopup(google).then(function(result){
+              var credential = result.credential;
+              this.autDelete(credential)}.bind(this))
           break
           case 'facebook.com':
-          var credential = firebase.auth.FacebookAuthProvider.credential(this.credential);
+              let facebook = new firebase.auth.FacebookAuthProvider(); 
+              this.fbapp.auth().signInWithPopup(facebook).then(function(result){
+              var credential = result.credential;
+              this.autDelete(credential)}.bind(this))                          
           break
         }
-       
-        this.user.reauthenticateWithCredential(credential).then(function(){ 
-            this.fbapp.database().ref('/users/' + this.user.uid).remove();  
+      
+      }
+
+      autDelete(credential){
+            this.user.reauthenticateWithCredential(credential).then(function(){ 
+              this.fbapp.database().ref('/users/' + this.user.uid).remove();  
               this.user.delete().then(function(){
                 this.data = { password: ''};
                 this.dispatchPositive('Conta Encerrada');
@@ -166,7 +211,7 @@ elemento para hacer el registro en firebase a travès de email y password
                 this.data = { password: ''};
                 this.dispatchNegative('Senha Inválida');
             }.bind(this))
-        }
+      }
 
       // actualización del e-mail del usuario
       updateEmail(){
@@ -204,11 +249,11 @@ elemento para hacer el registro en firebase a travès de email y password
               return false
               }
           if (this.user.providerData[0].providerId == 'password'){
-            var credential = firebase.auth.EmailAuthProvider.credential(this.user.email,this.data.password);
+            var credential = firebase.auth.EmailAuthProvider.credential(this.user.email,this.data.oldpass);
           this.user.reauthenticateWithCredential(credential).then(function(){
                this.user.updatePassword(this.newPass).then(function(){               
                     this.dispatchPositive('Senha atualizada');
-                    this.data = { password: ''};
+                    this.data = { oldpass: ''};
                     this.newPass = ''              
                }.bind(this), function (error) { // error del método 'Password'
                  this.dispatchNegative('E-mail ou senha inválidos');
@@ -230,6 +275,8 @@ elemento para hacer el registro en firebase a travès de email y password
       dispatchNegative(message){
            this.dispatchEvent(new CustomEvent('negativeToast', {bubbles:true, composed:true, detail:message}));
       }
+
+
 
     }
 

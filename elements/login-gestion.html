@@ -22,9 +22,7 @@ elemento que nos permite hacer la gestion de los usuarios (login y cadastro) a t
   <template>
     <style>
       :host {
-         @apply(--layout-vertical);
-          margin:auto;
-         width: 400px;
+      
 
       } 
 
@@ -35,8 +33,7 @@ elemento que nos permite hacer la gestion de los usuarios (login y cadastro) a t
 
       paper-tab{
         font-family: "Averta","Avenir W02","Avenir",Helvetica,Arial,sans-serif;font-size: 14px;
-        --paper-tab-ink:var(--accent-color); 
-        width: 100px  
+        --paper-tab-ink:var(--accent-color);                   
       }
 
       paper-tabs{
@@ -45,20 +42,11 @@ elemento que nos permite hacer la gestion de los usuarios (login y cadastro) a t
         --paper-tabs-selection-bar:{
           color:red;
         }
-      }
-
-      @media (max-width: 600px){
-
-        paper-tabs{
-          max-width: 325px
+        --paper-tabs:{
+          height: 40px;
+          margin-top: 1px
         }
-
-        paper-tab{
-          max-width: 325px
-        }
-
       }
-
 
     </style>
 
@@ -73,14 +61,14 @@ elemento que nos permite hacer la gestion de los usuarios (login y cadastro) a t
 
      
   <div class="container">
-    <paper-tabs selected="{{signSect}}" attr-for-selected="name">
+    <paper-tabs align-bottom selected="{{signSect}}" attr-for-selected="name">
       <paper-tab name="signin">Entrar</paper-tab>
-      <paper-tab name="register">Cadastre-se</paper-tab>
+      <paper-tab name="register">Cadastro</paper-tab>
     </paper-tabs>
    
      <iron-pages selected="{{signSect}}" attr-for-selected="name">
             
-        <div name="signin">
+        <div name="signin" class="signin">
 
           <login-signin 
               on-email="email"
@@ -90,12 +78,13 @@ elemento que nos permite hacer la gestion de los usuarios (login y cadastro) a t
           
           <login-social fbapp="{{fbapp}}"></login-social>
      
+     <!--
           <login-update 
               user="{{user}}" 
               fbapp="{{fbapp}}" 
               data="{{data}}" 
               credential="{{credential}}">
-        </login-update>
+        </login-update>  -->
      
         </div>
 
@@ -163,6 +152,8 @@ elemento que nos permite hacer la gestion de los usuarios (login y cadastro) a t
                   this.saveProfile(user,e.detail);
                       // ENLACE con <my-app>
                   this.dispatchEvent(new CustomEvent('positiveToast',{bubbles:true, composed:true, detail:'Oi ' + e.detail.name + '!'}));
+                   this.dispatchEvent(new CustomEvent('closeLogin',{bubbles:true, composed:true}));
+                  
                   this.resetRegister();  
                      //   user.sendEmailVerification()  // envio de email de verificacion               
               }.bind(this));
@@ -176,8 +167,6 @@ elemento que nos permite hacer la gestion de los usuarios (login y cadastro) a t
             name:''
           }
       }
-
-  
 
       //login con email y password; 'dato' es el objeto pasado por el componente <login-signin>, que incluye las propiedades 'dato.email' y 'dato.password'
    
@@ -194,6 +183,7 @@ elemento que nos permite hacer la gestion de los usuarios (login y cadastro) a t
               .then(function(result){
                   if (result){
                       this.dispatchEvent(new CustomEvent('positiveToast',{bubbles:true, composed:true, detail:'Oi!'}));
+                      this.dispatchEvent(new CustomEvent('closeLogin',{bubbles:true, composed:true}));
                   this.resetSignin();  
                   }   
               }.bind(this));

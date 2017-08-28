@@ -30,10 +30,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymerfire/polymerfire.html">
 <link rel="import" href="../bower_components/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="shared-styles.html">
 <link rel="import" href="../elements/elements-import.html">
 
@@ -41,11 +43,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <template>
     <style include="shared-styles">
       :host {
-        --app-primary-color: #4285f4;
+        --app-primary-color: #304ffe;
         --app-secondary-color: black;
-
-        display: block;
+       display: block;
       }
+
+
 
       app-drawer-layout:not([narrow]) [drawer-toggle] {
         display: none;
@@ -54,6 +57,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       app-header {
         color: #fff;
         background-color: var(--app-primary-color);
+        box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
       }
 
       app-header paper-icon-button {
@@ -78,9 +82,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .card{
-        width: 280px;
-        height:150px;
-        padding: 1px
+        width: 345px;
+        height:130px;
+        padding: 1px;
+        box-shadow: 0 2px 10px rgba(0,0,0,.2);
       }
 
       .actions{
@@ -90,8 +95,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          background: #eceff1;
          border-top: 1px solid #b0bec5;
          font-size: 13px;
+         margin-top: 15px;
+         border-radius:0px 0px 5px 5px;
 
       }
+
+     
+
+      #userName{
+        margin-left: 15px;
+        text-align: center;
+        font-weight: bold;
+
+      }
+
+       #userEmail{
+        
+        text-align: center;
+        
+
+      }
+
+      
 
       .actions paper-button{
         text-transform: none;
@@ -101,17 +126,64 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .cardContent{
-        font-size: 16px;
+        
+
+        font-size: 14px;
+      
+        padding:5px;
        
       }
 
       #profilePhoto{
          border-radius: 50px;
-         width: 50px;
-         height: 50px;
+         margin-right: 5px;
+         width: 65px;
+         height: 65px;
+         float:left;
       }
 
-   
+      iron-image{
+        background-color:var(--app-primary-color);
+         border-radius: 50px;
+
+         --iron-image-width:35px;
+         --iron-image-height:35px;
+         margin-top: 10px
+      }
+
+      
+
+      iron-icon#account{
+        
+        margin-top: 10px;
+        --iron-icon-width:35px;     
+        --iron-icon-height:35px;    
+
+      }
+
+      [hidden]{
+          display: none
+        }
+
+      paper-dialog{
+        height: 400px;
+        width: 300px;
+        border-radius:7px;
+      }
+
+      .header{
+        border-top-left-radius: 7px;
+        border-top-right-radius: 7px;
+        height: 130px;
+        margin-top: 0px;
+        background: var(--app-primary-color);
+      }
+
+      .login{
+        
+        margin-top: 0px;
+      }
+ 
     </style>
 
     
@@ -128,53 +200,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <app-drawer id="drawer" slot="drawer">
         <app-toolbar>Menu</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="view1">Minha Conta</a>
+          <a name="view1" href="view1">View One</a>
           <a name="view2" href="view2">View Two</a>
-          <a name="view3" href="view3">View Three</a>
+          <a name="view3" href="view3">Configuraçao</a>
         </iron-selector>
       </app-drawer>
 
       <!-- Main content -->
       <app-header-layout has-scrolling-region>
 
-        <app-header slot="header" condenses reveals effects="waterfall">
+        <app-header style="height: 50px;" slot="header" condenses reveals effects="waterfall">
           <app-toolbar>
             <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
             <div main-title>Mask 2.0</div>
 
 
-            
-               <iron-icon icon="perm-identity" id="signIcon" hidden$="{{signed}}" on-tap="pageSign"></iron-icon> 
-              <iron-icon icon="expand-more" id="expandIcon" hidden$="{{!signed}}" on-tap="openDrop"></iron-icon> 
-
-              <iron-icon on-tap="dropAccount" icon="my-icons:account-circle" id="acount"></iron-icon> 
-
-             
-
-               <iron-dropdown id="profileDrop" horizontal-align="right" vertical-align="top" vertical-offset="45" horizontal-offset="2">
-          <div slot="dropdown-content">
-
-    
-        
-        <div class="card" id="accountCard">
-          <div class="cardContent">
-              <img id="profilePhoto" src$="[[userProfile.photoURL]]" alt="my-icons:account-circle">
-                <div>[[userProfile.nombre]]</div>
-              
-          </div>
-          <login-social fbapp="{{fbapp}}" hidden$="{{signed}}"></login-social>
-          <div class="actions">
-            <paper-button>Conta</paper-button>
-            <paper-button on-tap="logout">Sair</paper-button>
-          </div>
-        </div>
-        
           
-      
-  </div>
-</iron-dropdown>
+              <!-- LOGIN -->
+               <iron-image loaded="{{loaded}}" preload fade hidden$="{{!signed}}" on-tap="dropAccount" src="[[userProfile.photoURL]]"></iron-image>
+         
+              <iron-icon hidden$="{{signed}}" on-tap="dialogAccount" icon="my-icons:account-circle" id="account"></iron-icon>    
 
-          </app-toolbar>  
+              <!-- LOGIN DROPDOWN -->  
+             
+              <iron-dropdown id="profileDrop" horizontal-align="right" vertical-align="top" vertical-offset="45" horizontal-offset="2">
+                <div slot="dropdown-content">
+     
+                  <div class="card" id="accountCard">
+                    <div class="cardContent">
+                      <img id="profilePhoto" hidden$="{{!signed}}" src$="[[userProfile.photoURL]]">
+                      <div id="userName">[[userProfile.nombre]]</div>
+                      <div id="userEmail">[[user.email]]</div>
+                      <a href="#">privacidade</a>
+                    </div>
+                    <div class="actions" id="actions">
+                      <a href="view3"><paper-button>conta</paper-button></a>
+                      <paper-button on-tap="logout">Sair</paper-button>
+                    </div>
+                  </div>   
+                </div>
+              </iron-dropdown>
         </app-header>
 
         <iron-pages
@@ -189,6 +254,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
+
+    <!-- DIALOG LOGIN -->
+     <paper-dialog modal id="dialogLogin">
+             
+            <h2 class="header">Mask 2.0   
+            <iron-icon icon="my-icons:close" on-tap="dialogClose"></iron-icon> 
+            </h2>
+           
+            <div class="login">
+              <login-gestion></login-gestion>
+            </div>
+    
+     </paper-dialog>
 
 
 <!-- /////////////////////////////////////////////////////////////////////////////////////-->
@@ -251,7 +329,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           userProfile:Object,
           fbapp:Object,
           signed:Boolean,
-          provider:String
+          provider:String,
+          user:{
+            type:Object,
+          
+          }
+        
         };
       }
 
@@ -302,12 +385,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
        ready(){
         super.ready();
-       // console.log('ready');
-
       // ENLACE con <login-gestion>
         this.addEventListener('positiveToast', e => this._openPositiveToast(e));
         this.addEventListener('negativeToast', e => this._openNegativeToast(e));
-      //  this.addEventListener('dialogUser', e => this._openDialogDelete(e));
+        this.addEventListener('closeLogin', e => this._closeDrope(e));
+        this.addEventListener('closeLogin', e => this.dialogClose(e));     
         }
 
         _openPositiveToast(e){
@@ -320,21 +402,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.$.negativeToast.text = e.detail
         }
 
-    //    _openDialogDelete(e){
-    //      this.$.removeDialog.open()
-    //    }
-
-          // enlace con el componente <bi-editor>
-     //   dialogAccept(e){
-     //     if (e.detail.confirmed){
-    //        console.log('acept')
-    //        let companyItem = e.currentTarget.company;
-     //      this.dispatchEvent('iron-signal', {name: 'sinal'});
-     //   }       
-     // }
-
-        
-        // cerrar sesión de usuario
     
       logout(){
         if (!this.user){
@@ -345,16 +412,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.auth.signOut().catch(function(error){
           console.log(error.code, error.message)
         }).then(function(){
-            
+            this._closeDrope();
             this.dispatchEvent(new CustomEvent('positiveToast',{bubbles:true, composed:true, detail:'Tchau!'}))
          // this.fire('positive-toast','Sessão encerrada')
         }.bind(this))
       }
 
       dropAccount(){
-        
+       
         this.$.profileDrop.open()
       }
+
+      _closeDrope(){
+        this.$.profileDrop.close()
+      }
+
+        dialogAccount(){
+       
+        this.$.dialogLogin.toggle()
+      }
+
+       dialogClose(){
+       
+        this.$.dialogLogin.close()
+      }
+
+     
       
     }
 

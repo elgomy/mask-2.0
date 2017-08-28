@@ -3,16 +3,39 @@
      MixinLogin = function(superClass){
         return class extends superClass{
 
+          
+     
+
+            static get properties() {
+              return {
+                credential: {
+                  type: Object
+                },
+
+                testi:String,
+     
+              };
+            }
+
+             connectedCallback() {
+        if (super.connectedCallback) {
+          super.connectedCallback();
+        }
+        /* ... */
+      }
+
       		     // método para loguear con 'Google' que lanzará el evento personalizado 'sign-google' para hacer el enlace con el componente <login-gestion> al que se le pasará la variable 'google' que contiene el método 'firebase.auth.GoogleAuthProvider()'. Se le pasará esta variable al método 'link' a través del parámetro 'social'
         // IMPORTANTE: DEBEMOS HABILITAR ESTOS MÈTODOS DE INICIO DE SESIÓN EN FIREBASE
             signGoogle() {
-              let google = new firebase.auth.GoogleAuthProvider(); // credential
+              let google = new firebase.auth.GoogleAuthProvider(); // provider
               this.signIn(google)
             }
 
             signFacebook() {
-              let facebook = new firebase.auth.FacebookAuthProvider(); // credential
-              this.signIn(facebook)
+              let facebook = new firebase.auth.FacebookAuthProvider(); // provider
+              this.signIn(facebook);
+              
+              
             }
 
             signIn(provider){
@@ -22,9 +45,12 @@
               }
             
                 this.fbapp.auth().signInWithPopup(provider).then(function(result){
-                  this.credential = result.credential;
+                //  console.log(result.credential);
+                  
                   this.saveProfile(result.user);
-                  this.dispatchEvent(new CustomEvent('positiveToast',{bubbles:true, composed:true, detail:'Oi!'}));                     
+                
+                  this.dispatchEvent(new CustomEvent('positiveToast',{bubbles:true, composed:true, detail:'Oi!'}));    
+                  this.dispatchEvent(new CustomEvent('closeLogin',{bubbles:true, composed:true}));                  
                 }.bind(this),
                     function(error){
                       this.errorCode(error);                          
@@ -53,6 +79,10 @@
                 break
                 case 'auth/email-already-in-use':
                 var message = 'Email ya asociado a un usuario';
+                this.fireEvent(message)
+                break
+                case 'auth/wrong-password':
+                var message = 'Email ou senha invalidos';
                 this.fireEvent(message)
                 break
                 case 'auth/invalid-email' || 'auth/wrong-password':
