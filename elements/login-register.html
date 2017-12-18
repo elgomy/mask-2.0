@@ -3,8 +3,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
 <!--
-`login-registro`
-elemento para hacer el registro en firebase a travès de email y password
+component with the register form
 
 @demo demo/index.html 
 -->
@@ -47,18 +46,19 @@ elemento para hacer el registro en firebase a travès de email y password
         pointer-events: none; 
       } */
 
-       @media (max-width: 600px) {
+       @media (max-width: 600px) { /* cambiarlo por min-width MOBILE FIRST
         .inputs{
             max-width: 325px;    
             margin-left: 1px
         }
   </style>
 
+    <!-- REGISTER USER FORM -->
     <div class=inputs>    
-      <paper-input label="Nome" value="{{data.name}}"></paper-input>
-      <paper-input label="E-mail" value="{{data.email}}" auto-validate error-message="email invalido"></paper-input>
-      <paper-input label="Senha" type="password" value="{{data.password}}"></paper-input>
-      <paper-button raised on-tap="signUp">Criar Conta</paper-button>
+      <paper-input label="Nome" value="{{user.name}}"></paper-input>
+      <paper-input label="E-mail" value="{{user.email}}" auto-validate error-message="invalid email"></paper-input>
+      <paper-input label="Senha" type="password" value="{{user.password}}"></paper-input>
+      <paper-button raised on-tap="signUp">Create Account</paper-button>
     </div>
    
   </template>
@@ -69,8 +69,11 @@ elemento para hacer el registro en firebase a travès de email y password
       static get is() { return 'login-register'; }
       static get properties() {
         return {
-           // objeto que contiene el email y el password del registro del usuario obtenidos a través del <paper-input>
-          data:{
+          /**
+          * user data (register form)
+          * @type {Object}
+          */ 
+          user:{
             type:Object,
             notify:true,
             value(){
@@ -81,7 +84,10 @@ elemento para hacer el registro en firebase a travès de email y password
               }
             }
           },
-            // tendrá valor 'true' cuando el usuario esté logueado
+          /**
+          * true when user is logged in 
+          * @type {Boolean}
+          */ 
           signedIn: {
             type: Boolean,
             reflectToAttribute: true,
@@ -90,9 +96,24 @@ elemento para hacer el registro en firebase a travès de email y password
         };
       }
 
-      // método que lanzará el evento personalizado 'register', para hacer el enlace con el componente <login-gestion>, pasando el objeto 'data', que contiene el 'email' y 'password' del usuario
+      /**
+      * user sign up
+      * dispatch register event listened by the component <login-admin>
+      */
       signUp(){
-        this.dispatchEvent(new CustomEvent('register', {bubbles:true, composed:true, detail:this.data}))
+        this.dispatchEvent(new CustomEvent('register', {bubbles:true, composed:true, detail:this.user}));
+        this.resetForm()
+      }
+
+      /**
+      * clear register form inputs
+      */
+      resetForm(){
+        this.user = {
+          email: '',
+          password: '',
+          name: ''
+        }
       }
      
     }

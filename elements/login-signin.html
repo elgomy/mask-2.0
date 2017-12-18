@@ -54,7 +54,7 @@
         --paper-input-container-focus-color:var(--accent-color)
       }
 
-    @media (max-width: 600px) {
+    @media (max-width: 600px) { /* estilo aplicado cuando el tamaño es < 400px */
         .inputs{
           max-width: 325px;  
           margin-left: 1px
@@ -62,24 +62,25 @@
     </style>
           
   
-  <!--sign in con email y password -->
-  <div class="inputs">
-    <paper-input 
+      <!-- SIGN FORM -->
+
+    <div class="inputs">
+      <paper-input 
         id="emailInput"   
         label="E-mail" 
-        value="{{dato.email}}">
-    </paper-input>
+        value="{{user.email}}">
+      </paper-input>
 
-  <div id="button">
-    <paper-input 
+    <div id="button">
+      <paper-input 
         required 
         label="Senha" 
         type="password" 
-        value="{{dato.password}}">
-    </paper-input>
-  </div>
-    
-    <paper-button id="signButton" raised on-tap="signEmail">Entrar</paper-button>
+        value="{{user.password}}">
+      </paper-input>
+    </div>
+
+    <paper-button id="signButton" raised on-tap="signEmail">Enter</paper-button>
 
     </div>
 
@@ -88,13 +89,14 @@
 
   <script>
 
+
     class LoginSignin extends Polymer.Element{
       static get is() { return 'login-signin' } 
       static get properties() {
         return {
             
           //objeto con los datos del usuario (propiedades 'email' y 'password')
-            dato:{
+            user:{
               type: Object,
               notify: true,
               value(){
@@ -107,10 +109,23 @@
         }
       }
 
-
+       /**
+      * user sign in
+      * dispatch email-signin event listened by the component <login-admin>
+      */
       signEmail(){
+        this.dispatchEvent(new CustomEvent('email-signin',{bubbles:true, composed:true, detail: this.user}));
+        this.resetForm();
+      }
 
-        this.dispatchEvent(new CustomEvent('email',{bubbles:true, composed:true, detail: this.dato}))
+       /**
+      * clear sign in form inputs
+      */
+      resetForm(){
+        this.user = {
+          email: '',
+          password: ''
+        }
       }
 
 

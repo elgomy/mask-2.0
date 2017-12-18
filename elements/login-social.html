@@ -1,7 +1,10 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="mixin-login.html">
+
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+
+<link rel="import" href="mixins/firelogin-error.html">
 
 <dom-module id="login-social">
   <template>
@@ -53,9 +56,20 @@
 
   <script>
 
-    class LoginSocial extends MixinLogin(Polymer.Element){
+    class LoginSocial extends FireloginError(Polymer.Element){
       static get is() { return 'login-social' } 
 
+       // método para loguear con 'Google' que lanzará el evento personalizado 'sign-google' para hacer el enlace con el componente <login-gestion> al que se le pasará la variable 'google' que contiene el método 'firebase.auth.GoogleAuthProvider()'. Se le pasará esta variable al método 'link' a través del parámetro 'social'
+        // IMPORTANTE: DEBEMOS HABILITAR ESTOS MÈTODOS DE INICIO DE SESIÓN EN FIREBASE
+
+        signGoogle() {
+            let google = new firebase.auth.GoogleAuthProvider(); // provider
+            this.dispatchEvent(new CustomEvent('sign-social',{bubbles:false, composed:true, detail:google})); 
+        }
+        signFacebook() {
+            let facebook = new firebase.auth.FacebookAuthProvider(); // provider
+            this.dispatchEvent(new CustomEvent('sign-social',{bubbles:false, composed:true, detail:facebook}));        
+        }
     }
 
     window.customElements.define(LoginSocial.is,LoginSocial)
